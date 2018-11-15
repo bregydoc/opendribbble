@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 	"time"
@@ -23,24 +24,12 @@ type ShotsPack struct {
 }
 
 func GetAllShotsFromInternet() ([]*GenericShot, error) {
+
 	rand.Seed(time.Now().Unix())
-	shots := CollectAllPopularShots()
-
-	feed, err := GetFeedFromKeyword("machine learning", map[string]string{
-		"max_results": "16",
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	colors, err := GetPopularColorsFromColorHunt()
-	if err != nil {
-		return nil, err
-	}
 
 	totalShots := make([]*GenericShot, 0)
 
+	shots := CollectAllPopularShots()
 	for _, s := range shots {
 		totalShots = append(totalShots, &GenericShot{
 			ID:        s.Link,
@@ -51,6 +40,36 @@ func GetAllShotsFromInternet() ([]*GenericShot, error) {
 			Comment:   s.Comment,
 			Published: time.Now(),
 			Updated:   time.Now(),
+		})
+	}
+
+	feed, err := GetFeedFromKeyword("machine learning artificial intelligence", map[string]string{
+		"max_results": "16",
+	})
+	if err != nil {
+		return totalShots, err
+	}
+
+	colors, err := GetPopularColorsFromColorHunt()
+	if err != nil {
+		return totalShots, err
+	}
+
+	if colors == nil {
+		colors = make([]*ColorHuntColor, 0)
+		colors = append(colors, &ColorHuntColor{
+			Color1: "#35013f",
+			Color2: "#99ddcc",
+			Color3: "#35013f",
+			Color4: "#99ddcc",
+		})
+
+	} else if len(colors) == 0 {
+		colors = append(colors, &ColorHuntColor{
+			Color1: "#35013f",
+			Color2: "#99ddcc",
+			Color3: "#35013f",
+			Color4: "#99ddcc",
 		})
 	}
 
@@ -65,13 +84,14 @@ func GetAllShotsFromInternet() ([]*GenericShot, error) {
 			c1 = c2
 			c2 = aux
 		}
+		y, m, d := s.Updated.Date()
 		totalShots = append(totalShots, &GenericShot{
 			ID:        s.ID,
 			Type:      "paper",
 			Title:     s.Title,
 			Image:     c1 + "," + c2,
 			Link:      s.Links[0].Href,
-			Comment:   s.Authors[0].Name,
+			Comment:   s.Authors[0].Name + fmt.Sprintf(" [%02d/%02d/%02d]", d, m, y),
 			Published: s.Published,
 			Updated:   s.Updated,
 		})

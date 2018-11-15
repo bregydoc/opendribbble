@@ -4,6 +4,7 @@ import (
 	"github.com/asdine/storm"
 	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/k0kubun/pp"
 	"log"
 	"net/http"
 	"time"
@@ -20,7 +21,7 @@ func init() {
 		panic(err)
 	}
 
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(3 * time.Minute)
 
 	CurrentShots, err = FetchAndUpdateShotsOnDB()
 	if err != nil {
@@ -31,6 +32,8 @@ func init() {
 		for t := range ticker.C {
 			log.Println(t.String())
 			CurrentShots, err = FetchAndUpdateShotsOnDB()
+			pp.Println(err)
+			pp.Println(CurrentShots)
 			if err != nil {
 				log.Println(err)
 			}

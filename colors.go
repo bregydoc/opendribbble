@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"gopkg.in/go-playground/colors.v1"
 	"gopkg.in/resty.v1"
+	"log"
 	"math"
 	"strings"
 )
@@ -90,9 +91,12 @@ func GetBestTwoContrastColors(color *ColorHuntColor) (string, string, error) {
 
 func GetPopularColorsFromColorHunt() ([]*ColorHuntColor, error) {
 	resp, err := resty.R().SetFormData(map[string]string{
-		"sort": "popular",
-	}).Post(baseUri)
+		"sort": "new",
+		"step": "0",
+		"tags": "",
+	}).SetHeader("origin", "https://colorhunt.co").Post(baseUri)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
