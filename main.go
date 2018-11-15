@@ -1,11 +1,42 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/gin-contrib/cors"
+	"github.com/asdine/storm"
+	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
+	"time"
 )
+
+var ShotsDB *storm.DB
+var CurrentShots []*GenericShot
+
+func init() {
+
+	var err error
+	ShotsDB, err = storm.Open("shots.db")
+	if err != nil {
+		panic(err)
+	}
+
+	ticker := time.NewTicker(10 * time.Minute)
+
+	CurrentShots, err = FetchAndUpdateShotsOnDB()
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		for t := range ticker.C {
+			log.Println(t.String())
+			CurrentShots, err = FetchAndUpdateShotsOnDB()
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	}()
+}
 
 func main() {
 	r := gin.Default()
@@ -22,4 +53,5 @@ func main() {
 	})
 	LinkAPI("/api", r)
 	r.Run(":4700")
+
 }
