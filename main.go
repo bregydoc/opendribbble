@@ -1,20 +1,21 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/asdine/storm"
 	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/k0kubun/pp"
-	"log"
-	"net/http"
-	"time"
 )
 
 var ShotsDB *storm.DB
 var CurrentShots []*GenericShot
 
 func init() {
-
+	log.Println("init!")
 	var err error
 	ShotsDB, err = storm.Open("shots.db")
 	if err != nil {
@@ -30,6 +31,7 @@ func init() {
 
 	go func() {
 		for t := range ticker.C {
+			log.Println("fetching!")
 			log.Println(t.String())
 			CurrentShots, err = FetchAndUpdateShotsOnDB()
 			pp.Println(err)
